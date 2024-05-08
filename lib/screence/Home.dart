@@ -37,19 +37,22 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey,
-        title: IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Profile(),
-                  ));
-            },
-            icon: Icon(Icons.person)),
+        title: Text("Crud"),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Profile(),
+                    ));
+              },
+              icon: Icon(Icons.person)),
+        ],
       ),
       body: StreamBuilder(
         stream:
-            FirebaseFirestore.instance.collection("AddingDetails").snapshots(),
+            FirebaseFirestore.instance.collection("AddingDetails").orderBy("Name").snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) {
             Center(
@@ -59,24 +62,24 @@ class _HomeState extends State<Home> {
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              var todo = snapshot.data!.docs[index];
+              var documentId = snapshot.data!.docs[index];
               return Card(
                 color: Colors.blue[200],
                 child: ListTile(
                   leading: CircleAvatar(
-                    child: Text(todo["Name"][0]),
+                    child: Text(documentId["Name"][0]),
                   ),
-                  title: Text(todo["Name"]),
-                  subtitle: Text(todo["Activity"]),
+                  title: Text(documentId["Name"]),
+                  subtitle: Text(documentId["Activity"]),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () {
-                          _taskIdForUpdate = todo.id;
-                          controllerName.text = todo['Name'];
-                          controllerActivity.text = todo['Activity'];
+                          _taskIdForUpdate = documentId.id;
+                          // controllerName.text = todo['Name'];
+                          // controllerActivity.text = todo['Activity'];
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -150,7 +153,7 @@ class _HomeState extends State<Home> {
                           onPressed: () {
                             FirebaseFirestore.instance
                                 .collection("AddingDetails")
-                                .doc(todo.id)
+                                .doc(documentId.id)
                                 .delete();
                           },
                           icon: Icon(Icons.delete))
@@ -233,7 +236,7 @@ class _HomeState extends State<Home> {
               });
         },
         backgroundColor: Colors.blue[200],
-        child: Icon(Icons.add,size: 30),
+        child: Icon(Icons.add, size: 30),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

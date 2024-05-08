@@ -1,9 +1,10 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, avoid_print, prefer_typing_uninitialized_variables
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, avoid_print, prefer_typing_uninitialized_variables, unused_element, use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crud_ref/screence/Home.dart';
 import 'package:crud_ref/screence/sigin_up.dart';
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SiginIn extends StatefulWidget {
   const SiginIn({super.key});
@@ -16,17 +17,11 @@ class _SiginInState extends State<SiginIn> {
   final emailcontroller = TextEditingController();
   final passwordcontroller = TextEditingController();
 
-  void checking1() {
-    final email = emailcontroller.text;
-    final password = passwordcontroller.text;
-    if (email == password) {
-      print("Right");
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (ctx) => Home()));
-    } else {
-      print("Wrong");
-    }
+  Future<void> _saveStoreIdToSharedPreferences(String storeData) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('storeData', storeData);
   }
+
   var size, width, height;
   final formkey = GlobalKey<FormState>();
   var secureText = true;
@@ -45,10 +40,12 @@ class _SiginInState extends State<SiginIn> {
               children: [
                 //*Image
                 SizedBox(
-                  height: height/2.5,
-                  width: width/1,
-                  child: Image.asset(
-                    "assets/images/sign-in.jpg",
+                  height: height / 2.5,
+                  width: width / 1,
+                  child: Image(
+                    image: AssetImage(
+                      "assets/images/sign-in.jpg",
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -59,12 +56,12 @@ class _SiginInState extends State<SiginIn> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-            
+
                 //*Textformfield
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: SizedBox(
-                    width: width/1.1,
+                    width: width / 1.1,
                     child: TextFormField(
                       controller: emailcontroller,
                       decoration: InputDecoration(
@@ -78,6 +75,11 @@ class _SiginInState extends State<SiginIn> {
                         if (value1 == null || value1.isEmpty) {
                           return "Please enter your email";
                         }
+                        if (!RegExp(
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                            .hasMatch(value1)) {
+                          return 'Enter a valid email!';
+                        }
                         return null;
                       },
                       keyboardType: TextInputType.emailAddress,
@@ -87,7 +89,7 @@ class _SiginInState extends State<SiginIn> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: SizedBox(
-                    width: width/1.1,
+                    width: width / 1.1,
                     child: TextFormField(
                       controller: passwordcontroller,
                       decoration: InputDecoration(
@@ -105,13 +107,25 @@ class _SiginInState extends State<SiginIn> {
                               borderRadius: BorderRadius.circular(30),
                               borderSide:
                                   BorderSide(color: Colors.blue, width: 2))),
-                      validator: (value1) {
-                        if (value1 == null || value1.isEmpty) {
+                      validator: (value2) {
+                        if (value2 == null || value2.isEmpty) {
                           return "please enter your password";
+                        }
+                        if (!RegExp((r'[A-Z]')).hasMatch(value2)) {
+                          return 'Uppercase letter is missing';
+                        }
+                        if (!RegExp((r'[a-z]')).hasMatch(value2)) {
+                          return 'Lowercase letter is missing';
+                        }
+                        if (!RegExp((r'[0-9]')).hasMatch(value2)) {
+                          return 'Digit is missing';
+                        }
+                        if (value2.length < 5) {
+                          return "Password must has 8 characters";
                         }
                         return null;
                       },
-                      keyboardType: TextInputType.number,
+                      // keyboardType: TextInputType.number,
                       obscureText: secureText,
                     ),
                   ),
@@ -134,11 +148,15 @@ class _SiginInState extends State<SiginIn> {
                       Padding(
                           padding: const EdgeInsets.only(left: 90),
                           child: TextButton(
-                              onPressed: () {}, child: Text("Forgot Password?",style: TextStyle(fontSize: 12),)))
+                              onPressed: () {},
+                              child: Text(
+                                "Forgot Password?",
+                                style: TextStyle(fontSize: 12),
+                              )))
                     ],
                   ),
                 ),
-            
+
                 //* Button
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
@@ -146,14 +164,54 @@ class _SiginInState extends State<SiginIn> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       InkWell(
-                        onTap: () {
+                        onTap: () async {
                           if (formkey.currentState!.validate()) {
-                            checking1();
+                            String userEmail = emailcontroller.text.trim();
+                            String userPassword =
+                                passwordcontroller.text.trim();
+                            var querySnapshot = await FirebaseFirestore.instance
+                                .collection('users')
+                                .where('email', isEqualTo: userEmail)
+                                .limit(1)
+                                .get();
+
+                            if (querySnapshot.docs.isNotEmpty) {
+                              var userData = querySnapshot.docs.first.data();
+                              if (userData['password'] == userPassword) {
+                                await _saveStoreIdToSharedPreferences(
+                                    userData['storeData']);
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Home(),
+                                  ),
+                                );
+                              } else {
+                                print('Incorrect password');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(10),
+                                    backgroundColor: Colors.black,
+                                    content: Text('Incorrect password'))
+                                );
+                              }
+                            } else {
+                              print('User not found');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(10),
+                                    backgroundColor: Colors.black,
+                                    content: Text('User not found'))
+                                );
+                            }
                           }
                         },
                         child: Container(
-                          height: height/15,
-                          width: width/1.6,
+                          height: height / 15,
+                          width: width / 1.6,
                           child: Center(
                               child: Text(
                             "Sigin in",
@@ -179,7 +237,7 @@ class _SiginInState extends State<SiginIn> {
                         onPressed: () {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (ctx) {
-                            return SiginUp();
+                            return SiginUp1();
                           }));
                         },
                         child: Text("Sign up"))

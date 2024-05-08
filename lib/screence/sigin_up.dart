@@ -1,32 +1,89 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_typing_uninitialized_variables
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_typing_uninitialized_variables, unused_element, avoid_print, use_build_context_synchronously
 
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crud_ref/screence/Home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 
-class SiginUp extends StatefulWidget {
-  const SiginUp({super.key});
+class SiginUp1 extends StatefulWidget {
+  const SiginUp1({super.key});
 
   @override
-  State<SiginUp> createState() => _SiginUpState();
+  State<SiginUp1> createState() => _SiginUp1State();
 }
 
-class _SiginUpState extends State<SiginUp> {
+class _SiginUp1State extends State<SiginUp1> {
+  
+  var errorMessage;
   final namecontroller = TextEditingController();
   final emailcontroller = TextEditingController();
   final passwordcontroller = TextEditingController();
   final formkey = GlobalKey<FormState>();
 
   Future<void> adding() async {
-    final regreference =
-        await FirebaseFirestore.instance.collection("Sigin Up").add({
-      "name": namecontroller.text,
-      "email": emailcontroller.text,
-      "passwored": passwordcontroller.text
-    });
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailcontroller.text,
+        password: passwordcontroller.text,
+      );
+
+      String authenticationUid = userCredential.user!.uid;
+
+      await FirebaseFirestore.instance.collection('users').doc(authenticationUid).set({
+        'name': namecontroller.text,
+        'email': emailcontroller.text,
+        'password': passwordcontroller.text,
+        'userId': authenticationUid,
+      });
+
+      print('User registered successfully!');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Home(),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      print('Failed to register user: $e');
+      String errorMessage = "Registration failed. ${e.message}";
+
+      if (e.code == 'email-already-in-use') {
+        errorMessage = "Email is already in use. Please use a different email.";
+      }
+
+      Fluttertoast.showToast(
+        msg: errorMessage,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } catch (e) {
+      print('Unexpected error during registration: $e');
+      Fluttertoast.showToast(
+        msg: "Unexpected error during registration.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 1),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
   var size, width, height;
   bool checking = true;
@@ -164,11 +221,7 @@ class _SiginUpState extends State<SiginUp> {
                     InkWell(
                       onTap: () {
                         if (formkey.currentState!.validate()) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Home(),
-                              ));
+                         
                           adding();
                         }
                       },
