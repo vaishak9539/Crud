@@ -1,9 +1,13 @@
-// ignore_for_file: prefer_typing_uninitialized_variables, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
+// ignore_for_file: prefer_typing_uninitialized_variables, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, unused_element, avoid_print
+
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:crud_ref/screence/Home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -20,8 +24,43 @@ class _ProfileState extends State<Profile> {
   final controllerPhone = TextEditingController();
   final controllerDepartment = TextEditingController();
   final controllerGenter = TextEditingController();
+  File? _image;
 
   final formkey = GlobalKey<FormState>();
+  var imageURL; 
+
+   Future<void> _getImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  
+  Future<void>uploadimage()async{
+    if(_image!= null){
+      try{
+         final ref = firebase_storage.FirebaseStorage.instance
+            .ref()
+            .child('product_images')
+            .child(DateTime.now().millisecondsSinceEpoch.toString());
+        await ref.putFile(_image!);
+
+        // Get the imageURL
+         imageURL = await ref.getDownloadURL();
+
+
+      }catch(e){
+        print('Error uploading product: $e');
+      }
+    }
+  }
   Future<void> editProfile() async {
     final addData = await FirebaseFirestore.instance.collection("Profile").add({
       "Name": controllername.text,
@@ -30,6 +69,7 @@ class _ProfileState extends State<Profile> {
       "Phone": controllerPhone.text,
       "Department": controllerDepartment.text,
       "Genter": controllerGenter.text,
+      'imageURL': imageURL.text,
     });
   }
 
@@ -50,9 +90,15 @@ class _ProfileState extends State<Profile> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage("assets/images/profile.png"),
+                    InkWell(
+                      onTap: (){
+                        _getImage();
+                      },
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundImage: _image!=null?FileImage(_image!):null
+                        // child: _image==null?Text("data"):Image.file(_image!,fit: BoxFit.cover,),
+                      ),
                     ),
                   ],
                 ),
@@ -250,6 +296,7 @@ class _ProfileState extends State<Profile> {
               ),
               InkWell(
                 onTap: () {
+                  // uploadimage();
                   editProfile();
                   Navigator.pushReplacement(
                       context, MaterialPageRoute(builder: (ctx) => Home()));

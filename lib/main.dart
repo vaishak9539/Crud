@@ -1,4 +1,5 @@
 import 'package:crud_ref/firebase_options.dart';
+import 'package:crud_ref/screence/Splash.dart';
 import 'package:crud_ref/screence/sigin_in.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SiginIn()
+      home: Splash()
     );
   }
 }

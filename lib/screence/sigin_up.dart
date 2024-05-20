@@ -3,19 +3,20 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crud_ref/screence/Home.dart';
+import 'package:crud_ref/screence/sigin_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 
-class SiginUp1 extends StatefulWidget {
-  const SiginUp1({super.key});
+class SignUp1 extends StatefulWidget {
+  const SignUp1({super.key});
 
   @override
-  State<SiginUp1> createState() => _SiginUp1State();
+  State<SignUp1> createState() => _SignUp1State();
 }
 
-class _SiginUp1State extends State<SiginUp1> {
+class _SignUp1State extends State<SignUp1> {
   
   var errorMessage;
   final namecontroller = TextEditingController();
@@ -37,6 +38,7 @@ class _SiginUp1State extends State<SiginUp1> {
         'name': namecontroller.text,
         'email': emailcontroller.text,
         'password': passwordcontroller.text,
+        'Created at' : DateTime.now(),
         'userId': authenticationUid,
       });
 
@@ -93,41 +95,49 @@ class _SiginUp1State extends State<SiginUp1> {
     height = size.height;
     width = size.width;
     return Scaffold(
+      backgroundColor: Color(0xff0E1D3E),
       body: SingleChildScrollView(
         child: Form(
           key: formkey,
           child: Column(
             children: [
-              //*Image
               SizedBox(
-                height: height/2.4,
+                height: height/3.3,
                 width: double.infinity,
-                child: Image.asset(
-                  "assets/images/signup.jpg",
-                  fit: BoxFit.cover,
-                ),
               ),
               Text(
                 "Create your account",
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w500,
+                  color: Colors.white
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: SizedBox(
-                  height: 50,
-                  width: 340,
+                  height: height / 14,
+                  width: width / 1.1,
                   child: TextFormField(
                     controller: namecontroller,
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
+                    cursorColor: Colors.white,
                     decoration: InputDecoration(
                         hintText: "Your name",
-                        prefixIcon: const Icon(Icons.account_circle),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide:
-                                BorderSide(color: Colors.blue, width: 2))),
+                        hintStyle: TextStyle(
+                          color: Colors.white70
+                        ),
+                        prefixIcon: const Icon(Icons.account_circle,color: Colors.white70),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white,width: 1)
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white,width: 1)),
+                            ),
                     keyboardType: TextInputType.name,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -143,17 +153,28 @@ class _SiginUp1State extends State<SiginUp1> {
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: SizedBox(
-                  height: 50,
-                  width: 340,
+               height: height / 14,
+                  width: width / 1.1,
                   child: TextFormField(
                     controller: emailcontroller,
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
+                    cursorColor: Colors.white,
                     decoration: InputDecoration(
                         hintText: "Your Email",
-                        prefixIcon: const Icon(Icons.email),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide:
-                                BorderSide(color: Colors.blue, width: 2))),
+                        hintStyle: TextStyle(
+                          color: Colors.white70
+                        ),
+                        prefixIcon: const Icon(Icons.email,color: Colors.white70,),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white,width: 1)
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white,width: 1)),
+                                ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value1) {
                       if (value1 == null || value1.isEmpty) {
@@ -172,12 +193,19 @@ class _SiginUp1State extends State<SiginUp1> {
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: SizedBox(
-                  height: 50,
-                  width: 340,
+                 height: height / 14,
+                  width: width / 1.1,
                   child: TextFormField(
                     controller: passwordcontroller,
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
+                    cursorColor: Colors.white,
                     decoration: InputDecoration(
-                        hintText: "Password",
+                        hintText: "Enter your Password",
+                        hintStyle: TextStyle(
+                          color: Colors.white70
+                        ),
                         suffixIcon: IconButton(
                             onPressed: () {
                               setState(() {
@@ -185,10 +213,19 @@ class _SiginUp1State extends State<SiginUp1> {
                               });
                             },
                             icon: Icon(checking
-                                ? Icons.visibility_off
-                                : Icons.visibility)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30))),
+                                ? (Icons.visibility_off)
+                                : (Icons.visibility),
+                                color: Colors.white70,
+                                )
+                                ),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white,width: 1)
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white,width: 1)),
+                            ),
                     obscureText: checking,
                     obscuringCharacter: "*",
                     validator: (value2) {
@@ -226,8 +263,8 @@ class _SiginUp1State extends State<SiginUp1> {
                         }
                       },
                       child: Container(
-                        height: height/15,
-                        width: width/1.6,
+                        height: height/16,
+                        width: width/1.5,
                         child: Center(
                             child: Text(
                           "Sigin up",
@@ -238,7 +275,7 @@ class _SiginUp1State extends State<SiginUp1> {
                         )),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: Colors.green[900],
+                          color: Colors.teal,
                         ),
                       ),
                     ),
@@ -251,51 +288,26 @@ class _SiginUp1State extends State<SiginUp1> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Or continue with",
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    )
+                      "Already have an Account ?",
+                      style: TextStyle(fontWeight: FontWeight.w500,
+                      color: Colors.white70
+                      ),
+                    ),
+                     TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (ctx) => SiginIn()),
+                        );
+                      },
+                      child: Text("Login",style: TextStyle(
+                        color: Colors.white
+                      ),),
+                    ),
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Container(
-                        height: 60,
-                        width: 60,
-                        child: Image.asset("assets/images/FACEBOOK.png"),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 60,
-                      width: 60,
-                      child: Image.asset(
-                          "assets/images/Google-logo-2015-G-icon.png"),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Container(
-                        height: 45,
-                        width: 45,
-                        child: Image.asset("assets/images/R.png"),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              )
+             
             ],
           ),
         ),
